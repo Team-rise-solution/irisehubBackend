@@ -44,6 +44,8 @@ app.get('/api/health', (req, res) => {
     })
 })
 
+console.log( "FRONTEND_URL: is ", process.env.FRONTEND_URL)
+
 // API Routes
 app.use("/api/admin", AdminRoute)     // Admin API  
 app.use("/api/news", NewsRoute)       // News API
