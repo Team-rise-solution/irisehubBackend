@@ -31,6 +31,9 @@ app.use(cors({
     exposedHeaders: ['Content-Disposition']
 }))
 
+app.get('/', (req, res) => {
+    res.json({ success: true, message: "Backend is running successfully!" });
+  });
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
