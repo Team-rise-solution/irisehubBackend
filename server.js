@@ -9,6 +9,7 @@ import AdminRoute from "./Routes/AdminRoute.js";
 import NewsRoute from "./Routes/NewsRoute.js";
 import EventRoute from "./Routes/EventRoute.js";
 import BookingRoute from "./Routes/BookingRoute.js";
+import StoryRoute from "./Routes/StoryRoute.js";
 dotenv.config({ 
     silent: true  // This will suppress the dotenv messages
 })
@@ -19,6 +20,8 @@ const port = process.env.PORT || 5000
 
 
 //middleware
+// Note: express.json() and express.urlencoded() should come BEFORE multer routes
+// Multer will handle multipart/form-data, so we don't need to parse it here
 app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ extended: true, limit: '50mb' }))
 
@@ -79,6 +82,9 @@ app.use("/api/admin", AdminRoute)     // Admin API
 app.use("/api/news", NewsRoute)       // News API
 app.use("/api/events", EventRoute)    // Events API
 app.use("/api/bookings", BookingRoute) // Bookings API
+app.use("/api/stories", StoryRoute)    // Stories API
+
+console.log("✅ Stories API routes registered at /api/stories")
 
 
 // 404 handler - Must be last
@@ -108,5 +114,6 @@ app.listen(port, () => {
     console.log(`📊 Health check: http://localhost:${port}/api/health`)
     console.log(`👤 Admin API: http://localhost:${port}/api/admin`)
     console.log(`📰 News API: http://localhost:${port}/api/news`)
+    console.log(`📖 Stories API: http://localhost:${port}/api/stories`)
 })
 
