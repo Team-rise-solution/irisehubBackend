@@ -37,6 +37,13 @@ if (process.env.FRONTEND_URL) {
     allowedOrigins.push(...productionUrls);
 }
 
+// Also allow common Vercel patterns
+const vercelPatterns = [
+    'https://irisehub-frontend.vercel.app',
+    'https://*.vercel.app',
+    'https://irisehub-frontend-*.vercel.app'
+];
+
 app.use(cors({
     origin: function (origin, callback) {
         // Allow requests with no origin (like mobile apps, curl, Postman)
@@ -46,6 +53,10 @@ app.use(cors({
         if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } 
+        // Allow Vercel domains
+        else if (origin.includes('vercel.app')) {
+            callback(null, true);
+        }
         // In development, also allow any localhost origin for flexibility
         else if (process.env.NODE_ENV !== 'production' && origin.includes('localhost')) {
             callback(null, true);
@@ -53,6 +64,7 @@ app.use(cors({
         // In production, only allow exact matches
         else {
             console.warn(`CORS blocked origin: ${origin}`);
+            console.warn(`Allowed origins:`, allowedOrigins);
             callback(new Error('Not allowed by CORS'));
         }
     },
