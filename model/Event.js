@@ -45,6 +45,23 @@ const eventSchema = new mongoose.Schema({
         required: [true, 'Author is required'],
         trim: true
     },
+    speakerType: {
+        type: String,
+        enum: ['single', 'multiple'],
+        default: 'single'
+    },
+    speakers: {
+        type: [String],
+        default: [],
+        validate: {
+            validator: function(arr) {
+                if (!Array.isArray(arr)) return false;
+                if (arr.length === 0) return true; // allow empty for legacy, handled in controller
+                return arr.every(name => typeof name === 'string' && name.trim().length >= 2);
+            },
+            message: 'Each speaker name must be at least 2 characters'
+        }
+    },
     eventDate: {
         type: Date,
         default: null

@@ -1,13 +1,56 @@
 import Event from '../model/Event.js';
 import cloudinary from 'cloudinary';
 
+const parseSpeakersInput = (input) => {
+    if (!input) return [];
+
+    if (Array.isArray(input)) {
+        return input;
+    }
+
+    if (typeof input === 'string') {
+        const trimmed = input.trim();
+        if (!trimmed) return [];
+
+        // Try JSON parse first
+        try {
+            const parsed = JSON.parse(trimmed);
+            if (Array.isArray(parsed)) {
+                return parsed;
+            }
+        } catch (error) {
+            // Not JSON, continue
+        }
+
+        // Fallback: split by newline or comma
+        return trimmed
+            .split(/[\n,]/)
+            .map(name => name.trim())
+            .filter(Boolean);
+    }
+
+    return [];
+};
+
+const normalizeSpeakers = (rawSpeakers, speakerType = 'single') => {
+    const cleaned = parseSpeakersInput(rawSpeakers)
+        .map(name => name.trim())
+        .filter(name => name.length >= 2);
+
+    if (speakerType === 'single') {
+        return cleaned.length > 0 ? [cleaned[0]] : [];
+    }
+
+    return cleaned;
+};
+
 // Add Event
 const addEvent = async (req, res) => {
     try {
         console.log('Request body:', req.body);
         console.log('Request files:', req.files);
         
-        const { title, shortDescription, fullDescription, author, type, youtubeLink, eventDate, eventTime, location } = req.body;
+        const { title, shortDescription, fullDescription, author, type, youtubeLink, eventDate, eventTime, location, speakerType } = req.body;
 
         console.log('Extracted data:', { title, shortDescription, fullDescription, author, type, youtubeLink, eventDate, location });
         console.log('Title length:', title ? title.length : 'undefined');
@@ -40,6 +83,16 @@ const addEvent = async (req, res) => {
             return res.json({
                 success: false,
                 message: "Author name must be at least 2 characters"
+            });
+        }
+
+        const normalizedSpeakerType = speakerType === 'multiple' ? 'multiple' : 'single';
+        const speakers = normalizeSpeakers(req.body.speakers, normalizedSpeakerType);
+
+        if (!speakers.length) {
+            return res.json({
+                success: false,
+                message: "Please provide at least one speaker name"
             });
         }
 
@@ -92,6 +145,8 @@ const addEvent = async (req, res) => {
             eventDate: eventDate ? new Date(eventDate) : null,
             eventTime: eventTime?.trim() || null,
             location: location?.trim() || null,
+            speakerType: normalizedSpeakerType,
+            speakers,
             image: imageUrl,
             isPublished: true,
             publishedAt: new Date()
@@ -244,7 +299,17 @@ const getEventById = async (req, res) => {
 const updateEvent = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, shortDescription, fullDescription, author, type, youtubeLink, eventDate, eventTime, location } = req.body;
+        const { title, shortDescription, fullDescription, author, type, youtubeLink, eventDate, eventTime, location, speakerType } = req.body;
+
+        const normalizedSpeakerType = speakerType === 'multiple' ? 'multiple' : 'single';
+        const speakers = normalizeSpeakers(req.body.speakers, normalizedSpeakerType);
+
+        if (!speakers.length) {
+            return res.json({
+                success: false,
+                message: "Please provide at least one speaker name"
+            });
+        }
 
         const updateData = {
             title: title?.trim(),
@@ -255,7 +320,9 @@ const updateEvent = async (req, res) => {
             youtubeLink: youtubeLink?.trim() || null,
             eventDate: eventDate ? new Date(eventDate) : null,
             eventTime: eventTime?.trim() || null,
-            location: location?.trim() || null
+            location: location?.trim() || null,
+            speakerType: normalizedSpeakerType,
+            speakers
         };
 
         // Handle file update if new file is uploaded

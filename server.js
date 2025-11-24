@@ -75,7 +75,13 @@ app.use(cors({
 }))
 
 app.get('/', (req, res) => {
-    res.json({ success: true, message: "Backend is running successfully!" });
+    res.json({ 
+        success: true, 
+        message: "Backend is running successfully!",
+        environment: process.env.NODE_ENV || 'development',
+        port: process.env.PORT || 5000,
+        frontendUrl: process.env.FRONTEND_URL || 'not set'
+    });
   });
 
 // Health check endpoint
@@ -101,9 +107,26 @@ console.log("✅ Stories API routes registered at /api/stories")
 
 // 404 handler - Must be last
 app.use((req, res) => {
+    console.error(`❌ 404 - Route not found: ${req.method} ${req.originalUrl}`);
+    console.error(`   Available routes:`);
+    console.error(`   - GET  /api/health`);
+    console.error(`   - GET  /api/news`);
+    console.error(`   - GET  /api/events`);
+    console.error(`   - GET  /api/stories/approved`);
+    console.error(`   - POST /api/admin/super-login`);
+    
     res.status(404).json({
         success: false,
-        message: 'Route not found'
+        message: 'Route not found',
+        requestedPath: req.originalUrl,
+        method: req.method,
+        availableRoutes: [
+            'GET /api/health',
+            'GET /api/news',
+            'GET /api/events',
+            'GET /api/stories/approved',
+            'POST /api/admin/super-login'
+        ]
     })
 })
 
@@ -119,13 +142,22 @@ app.use((err, req, res, next) => {
 
 // Connect to services
 connectCloudinary()
-connectDB()
+connectDB().catch(err => {
+    console.error('❌ MongoDB connection error:', err.message);
+    console.log('⚠️ Server will continue but database operations may fail');
+})
 
 app.listen(port, () => {
     console.log(`🚀 Server is running on port ${port}`)
+    console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`)
     console.log(`📊 Health check: http://localhost:${port}/api/health`)
     console.log(`👤 Admin API: http://localhost:${port}/api/admin`)
     console.log(`📰 News API: http://localhost:${port}/api/news`)
+    console.log(`📅 Events API: http://localhost:${port}/api/events`)
     console.log(`📖 Stories API: http://localhost:${port}/api/stories`)
+    console.log(`✅ CORS allowed origins:`, allowedOrigins)
+    console.log(`✅ MongoDB URI: ${process.env.MONGODB_URI ? 'SET' : 'NOT SET'}`)
+    console.log(`\n✅ All routes registered successfully!`)
+    console.log(`✅ Ready to accept requests on http://localhost:${port}\n`)
 })
 

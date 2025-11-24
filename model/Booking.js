@@ -33,6 +33,29 @@ const bookingSchema = new mongoose.Schema({
     trim: true,
     match: [/^[\+]?[1-9][\d]{0,15}$/, 'Please enter a valid mobile number']
   },
+  gender: {
+    type: String,
+    enum: ['male', 'female'],
+    required: true
+  },
+  educationBackground: {
+    type: String,
+    required: true,
+    trim: true,
+    minlength: 2,
+    maxlength: 200
+  },
+  employmentStatus: {
+    type: String,
+    enum: ['employed', 'unemployed'],
+    required: true
+  },
+  expectation: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 500
+  },
   bookingDate: {
     type: Date,
     default: Date.now
@@ -41,11 +64,6 @@ const bookingSchema = new mongoose.Schema({
     type: String,
     enum: ['pending', 'confirmed', 'cancelled'],
     default: 'pending'
-  },
-  notes: {
-    type: String,
-    maxlength: 500,
-    trim: true
   }
 }, {
   timestamps: true

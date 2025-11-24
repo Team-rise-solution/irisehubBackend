@@ -4,13 +4,54 @@ import Event from '../model/Event.js';
 // Create a new booking
 export const createBooking = async (req, res) => {
   try {
-    const { eventId, fullName, email, location, mobileNumber, notes } = req.body;
+    const { 
+      eventId, 
+      fullName, 
+      email, 
+      location, 
+      mobileNumber, 
+      gender,
+      educationBackground,
+      employmentStatus,
+      expectation 
+    } = req.body;
 
     // Validate required fields
-    if (!eventId || !fullName || !email || !location || !mobileNumber) {
+    if (!eventId || !fullName || !email || !location || !mobileNumber || !gender || !educationBackground || !employmentStatus || !expectation) {
       return res.status(400).json({
         success: false,
         message: 'All required fields must be provided'
+      });
+    }
+
+    const normalizedGender = gender.toLowerCase();
+    const normalizedEmployment = employmentStatus.toLowerCase();
+
+    if (!['male', 'female'].includes(normalizedGender)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Gender must be male or female'
+      });
+    }
+
+    if (!['employed', 'unemployed'].includes(normalizedEmployment)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Employment status must be employed or unemployed'
+      });
+    }
+
+    if (educationBackground.trim().length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: 'Education background must be at least 2 characters'
+      });
+    }
+
+    if (expectation.trim().length < 5) {
+      return res.status(400).json({
+        success: false,
+        message: 'Expectation must be at least 5 characters'
       });
     }
 
@@ -39,7 +80,10 @@ export const createBooking = async (req, res) => {
       email,
       location,
       mobileNumber,
-      notes: notes || ''
+      gender: normalizedGender,
+      educationBackground: educationBackground.trim(),
+      employmentStatus: normalizedEmployment,
+      expectation: expectation.trim()
     });
 
     await booking.save();
