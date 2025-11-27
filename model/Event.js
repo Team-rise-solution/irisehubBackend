@@ -32,13 +32,7 @@ const eventSchema = new mongoose.Schema({
     youtubeLink: {
         type: String,
         default: null,
-        validate: {
-            validator: function(v) {
-                if (!v) return true; // Allow empty
-                return /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[\w-]+/.test(v);
-            },
-            message: 'Please provide a valid YouTube URL'
-        }
+        trim: true
     },
     author: {
         type: String,
