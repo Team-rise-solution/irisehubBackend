@@ -7,11 +7,17 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_SECRET_KEY,
 });
 
+const parsePublishedDate = (value) => {
+  if (!value) return null;
+  const parsed = new Date(value);
+  return isNaN(parsed.getTime()) ? null : parsed;
+};
+
 
 // Add News
 const addNews = async (req, res) => {
   try {
-    const { title, shortDescription, fullDescription, author, imageUrl } = req.body;
+    const { title, shortDescription, fullDescription, author, imageUrl, publishedAt } = req.body;
 
     // Validation
     if (!title || title.trim().length < 3) {
@@ -42,6 +48,8 @@ const addNews = async (req, res) => {
 
     }
 
+    const customPublishedAt = parsePublishedDate(publishedAt);
+
     const newsData = {
       title: title.trim(),
       shortDescription: shortDescription.trim(),
@@ -49,7 +57,7 @@ const addNews = async (req, res) => {
       author: authorName,
       image: finalImageUrl,
       isPublished: true,
-      publishedAt: new Date(),
+      publishedAt: customPublishedAt || new Date(),
     };
 
     const news = new News(newsData);
@@ -77,7 +85,7 @@ const getAllNews = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const news = await News.find({})
-      .sort({ createdAt: -1 })
+      .sort({ publishedAt: -1, createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
@@ -121,7 +129,7 @@ const getNewsById = async (req, res) => {
 const updateNews = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, shortDescription, fullDescription, author, imageUrl } = req.body;
+    const { title, shortDescription, fullDescription, author, imageUrl, publishedAt } = req.body;
 
     const updateData = {};
     if (title?.trim()) updateData.title = title.trim();
@@ -129,6 +137,10 @@ const updateNews = async (req, res) => {
     if (fullDescription?.trim()) updateData.fullDescription = fullDescription.trim();
     if (author?.trim()) updateData.author = author.trim();
     if (imageUrl !== undefined) updateData.image = imageUrl;
+    if (publishedAt !== undefined) {
+      const parsedDate = parsePublishedDate(publishedAt);
+      updateData.publishedAt = parsedDate;
+    }
 
     if (req.files) {
       // Image update
