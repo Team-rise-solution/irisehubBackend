@@ -44,6 +44,7 @@ const vercelPatterns = [
     'https://irisehub-frontend-*.vercel.app'
 ];
 
+
 app.use(cors({
     origin: function (origin, callback) {
         // Allow requests with no origin (like mobile apps, curl, Postman)
@@ -80,7 +81,7 @@ app.get('/', (req, res) => {
         message: "Backend is running successfully!",
         environment: process.env.NODE_ENV || 'development',
         port: process.env.PORT || 5000,
-        frontendUrl: process.env.FRONTEND_URL || 'not set'
+        frontendUrl: process.env.FRONTEND_URL || 'not Set'
     });
   });
 
@@ -112,8 +113,7 @@ app.use((req, res) => {
     console.error(`   - GET  /api/health`);
     console.error(`   - GET  /api/news`);
     console.error(`   - GET  /api/events`);
-    console.error(`   - GET  /api/stories/approved`);
-    console.error(`   - POST /api/admin/super-login`);
+
     
     res.status(404).json({
         success: false,
